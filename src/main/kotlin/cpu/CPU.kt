@@ -2,6 +2,7 @@ package cpu
 
 import mem.FIFOPolicy
 import mem.Memory
+import mem.Page
 
 class CPU(
     val realMemorySize: Int,
@@ -19,16 +20,19 @@ class CPU(
 
         if (pagesAvailable < requiredPages) {
             val candidates = realMemory.getSwappingCandidates(requiredPages)
-            val swappedPages = candidates.map { realMemory.pages.get(it) }
+            val swappedPages = candidates.map {
+                val page = realMemory.pages.get(it)
+                realMemory.pages.set(it, Page(pid = null, pageIndex = it, processPageIndex = null))
 
-//            candidates.forEach { realMemory.pages[it] = realMemory.pages[it].copy(pid = null) }
-//
-//            swappedPages.forEach {
-//                realMemory.pages.add
-//            }
+                return@map page
+            }
 
+            swappedPages.forEach {
+                swapMemory.allocatePage(
+                    pid = it.pid,
+                    processPageIndex = it.processPageIndex)
+            }
         }
-
 
         (0 until requiredPages).forEach {
             realMemory.allocatePage(
@@ -39,7 +43,16 @@ class CPU(
     }
 
     fun accessProccess(pid: Int, virtualAddress: Int, modify: Boolean = false) {
-//        if (realMemory.contains(pid = pid, virtualAddress: pid))
+        val pageNumber = virtualAddress / pageSize
+        val displacement = virtualAddress % pageSize
+
+        val page = realMemory.pages.firstOrNull { it.pid ==  pid && it.processPageIndex == pageNumber }
+
+        if (page == null) {
+            //swap
+        } else {
+            print("${page.pageIndex * pageSize + displacement} \n")
+        }
     }
 
     fun getMemoryAllocationStatus() = Pair<Any, Any>(

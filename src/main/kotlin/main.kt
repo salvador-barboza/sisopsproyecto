@@ -20,30 +20,28 @@ fun main() {
 
     // P 2048 1
     cpu.spawnProcess(size = 2048, pid = 1)
-    cpu.realMemory.pages.forEach {
-     print("${it.pid} ${it.processPageIndex} \n")
-    }
-    print(cpu.getMemoryAllocationStatus().toString()) //TODO: Format
 
-//    // A 1 1 0
-//    cpu.accessProccess(pid = 1, virtualAddress = 1)
-//
-//    // A 33 1  1
-//    cpu.accessProccess(pid = 1, virtualAddress = 33, modify = true)
+    // A 1 1 0
+    cpu.accessProccess(pid = 1, virtualAddress = 1)
+
+    // A 33 1  1
+    cpu.accessProccess(pid = 1, virtualAddress = 33, modify = true)
 //
 //    // P 32 2
     cpu.spawnProcess(size = 32, pid = 2)
-    cpu.realMemory.pages.forEach {
-        print("${it.pid} ${it.processPageIndex} \n")
-    }
-    print(cpu.getMemoryAllocationStatus().toString()) //TODO: Format
+//    cpu.realMemory.pages.forEach {
+//        print("${it.pid} ${it.processPageIndex} \n")
+//    }
+//    cpu.swapMemory.pages.forEach {
+//        print("${it.pid} ${it.processPageIndex} \n")
+//    }
 
-//
-//    // A 15 2 0
-//    cpu.accessProccess(pid = 2, virtualAddress = 15)
-//
-//    // A 82 1 0
-//    cpu.accessProccess(pid = 1, virtualAddress = 82)
+
+    // A 15 2 0
+    cpu.accessProccess(pid = 2, virtualAddress = 15)
+
+    // A 82 1 0
+    cpu.accessProccess(pid = 1, virtualAddress = 82)
 //
 //    // L 2
 //    cpu.clearProcess(pid = 2)

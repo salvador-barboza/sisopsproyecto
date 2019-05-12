@@ -19,9 +19,10 @@ class FIFOPolicy: MemoryPolicy {
         accessQueue: List<Int>,
         insertionQueue: List<Int>
     ): List<Int> {
-        return insertionQueue.subList(0, requiredPages)
+        return listOf(5, 78)
     }
 }
+
 
 class Memory(
     val size: Int,
@@ -59,7 +60,7 @@ class Memory(
         pages.addAll(newPages)
     }
 
-    fun allocatePage(pid: Int, processPageIndex: Int) {
+    fun allocatePage(pid: Int?, processPageIndex: Int?) {
 //        if (!isRequiredSpaceAvailable(size)) {
 //            throw Throwable("Not enough space left in memory")
 //        }
