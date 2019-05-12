@@ -1,0 +1,9 @@
+.DS_Store
+.idea/shelf
+out/
+/tmp
+workspace.xml
+*.versionsBackup
+.idea
+.gradle
+local.properties
