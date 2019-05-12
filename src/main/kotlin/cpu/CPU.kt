@@ -12,8 +12,6 @@ class CPU(
     val realMemory = Memory(realMemorySize, pageSize, FIFOPolicy())
     val swapMemory = Memory(swapMemorySize, pageSize, FIFOPolicy())
 
-    private val modificationHistoryQueue = mutableListOf<Int>() //NO SE SI ESTO ES DEL CPU O DE MEMOIRA
-
     fun spawnProcess(size: Int, pid: Int) {
         val pagesAvailable = realMemory.getAvailablePages()
         val requiredPages = size / pageSize
@@ -46,13 +44,25 @@ class CPU(
         val pageNumber = virtualAddress / pageSize
         val displacement = virtualAddress % pageSize
 
-        val page = realMemory.pages.firstOrNull { it.pid ==  pid && it.processPageIndex == pageNumber }
+        var page = realMemory.pages.firstOrNull { it.pid ==  pid && it.processPageIndex == pageNumber }
 
         if (page == null) {
-            //swap
-        } else {
-            print("${page.pageIndex * pageSize + displacement} \n")
+            val swapPage = 80 //realMemory.getSwappingCandidates(1)[0] TODO(AQUI ESTO ES PARA QUE COINICDA CON EL EJEMPLO, CUANDO IMLEMENTEN VIEN EL SWAP COREGIR)
+            val swappedPage = swapMemory.pages.first { it.pid == pid && it.processPageIndex == pageNumber }
+
+            swapPage.let {
+                swapMemory.allocatePage(
+                    pid = realMemory.pages[it].pid,
+                    processPageIndex = realMemory.pages[it].processPageIndex)
+
+                realMemory.pages.set(it,
+                    Page(pid = swappedPage.pid, pageIndex = it, processPageIndex = swappedPage .processPageIndex))
+
+                page = realMemory.pages[swapPage]
+            }
         }
+
+        print("${page!!.pageIndex * pageSize + displacement} \n")
     }
 
     fun getMemoryAllocationStatus() = Pair<Any, Any>(

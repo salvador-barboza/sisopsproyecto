@@ -26,29 +26,26 @@ fun main() {
 
     // A 33 1  1
     cpu.accessProccess(pid = 1, virtualAddress = 33, modify = true)
-//
-//    // P 32 2
-    cpu.spawnProcess(size = 32, pid = 2)
-//    cpu.realMemory.pages.forEach {
-//        print("${it.pid} ${it.processPageIndex} \n")
-//    }
-//    cpu.swapMemory.pages.forEach {
-//        print("${it.pid} ${it.processPageIndex} \n")
-//    }
 
+    // P 32 2
+    cpu.spawnProcess(size = 32, pid = 2)
 
     // A 15 2 0
     cpu.accessProccess(pid = 2, virtualAddress = 15)
 
     // A 82 1 0
     cpu.accessProccess(pid = 1, virtualAddress = 82)
-//
-//    // L 2
-//    cpu.clearProcess(pid = 2)
-//
-//    // P 32 3
-//    cpu.spawnProcess(pid = 3, size = 32)
-//
-//    // L 1
-//    cpu.clearProcess(pid = 1)
+
+    // L 2
+    cpu.clearProcess(pid = 2)
+
+    // P 32 3
+    cpu.spawnProcess(size = 32, pid = 3)
+
+    // L 1
+    cpu.clearProcess(pid = 1)
+
+    cpu.realMemory.pages.forEach {
+        print("${it.pageIndex} - ${it.pid ?: ""} ${it.processPageIndex ?: 'L'} \n")
+    }
 }

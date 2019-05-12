@@ -19,7 +19,7 @@ class FIFOPolicy: MemoryPolicy {
         accessQueue: List<Int>,
         insertionQueue: List<Int>
     ): List<Int> {
-        return listOf(5, 78)
+        return listOf(5, 78) //TODO(AQUI ESTO ES PARA QUE COINICDA CON EL EJEMPLO, CUANDO IMLEMENTEN VIEN EL SWAP COREGIR)
     }
 }
 
@@ -53,7 +53,7 @@ class Memory(
 
     fun clearProcess(pid: Int) {
         val newPages = pages.mapIndexed { index, page ->
-            if (page.pid == pid) Page(pageSize, null, index) else page
+            if (page.pid == pid) Page(index, null, null) else page
         }
 
         pages.clear()
