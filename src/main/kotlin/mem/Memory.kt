@@ -14,8 +14,9 @@ class Memory(
 ) {
     val actualPolicy: MemoryPolicy = when(policy) {
         MemoryPolicies.FIFO -> FIFOPolicy()
-        MemoryPolicies.LRU -> LRUPolicy()
-        MemoryPolicies.MFU -> MFUPolicy()
+        MemoryPolicies.LRU -> FIFOPolicy()
+        MemoryPolicies.MFU -> FIFOPolicy()
+        MemoryPolicies.LIFO -> LIFOPolicy()
     }
     private val modifyQueue = mutableListOf<Int>()
     private val accessQueue = mutableListOf<Int>()
@@ -60,23 +61,6 @@ class Memory(
             }
     }
 
-    fun addToModifyQueue(pid: Int?, processPageIndex: Int?) {
-        pages.indexOfFirst { it.pid == null }
-            .let {
-                modifyQueue.add(it)
-                pages[it] = Page(
-                    pageIndex =  it,
-                    pid = pid,
-                    processPageIndex = processPageIndex
-                )
-            }
-    }
-
-    fun getMostRepeated():Int? {
-        val numbersByElement = insertionQueue.groupingBy { it }.eachCount()
-        return numbersByElement.maxBy { it.value }?.key
-    }
-
     fun getSwappingCandidates(requiredPages: Int): List<Int> = actualPolicy.getSwappingCandidates(requiredPages)
 
     fun getSwappingCandidate(): Int = actualPolicy.getSwappingCandidates(1).first()
@@ -90,25 +74,15 @@ class Memory(
 
     inner class FIFOPolicy: MemoryPolicy {
         override fun getSwappingCandidates(i: Int): List<Int> {
-            return insertionQueue.subList(fromIndex = 0, toIndex = i)
+            var res = insertionQueue.subList(fromIndex = 0, toIndex = i)
+            return res
         }
     }
 
-    inner class LRUPolicy: MemoryPolicy {
+    inner class LIFOPolicy: MemoryPolicy {
         override fun getSwappingCandidates(i: Int): List<Int> {
-            var result = modifyQueue.subList(fromIndex = modifyQueue.lastIndex - i, toIndex = modifyQueue.lastIndex)
-            return result
-        }
-    }
-
-
-    inner class MFUPolicy: MemoryPolicy {
-        override fun getSwappingCandidates(i: Int): List<Int> {
-            var listResult =  mutableListOf<Int>()
-            for(x in 0..i) {
-                listResult.add(getMostRepeated()!!)
-            }
-            return listResult
+            var res = insertionQueue.subList(fromIndex = insertionQueue.size - i, toIndex = insertionQueue.size)
+            return res
         }
     }
 }

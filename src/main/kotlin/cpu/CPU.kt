@@ -9,8 +9,8 @@ class CPU(
     val swapMemorySize: Int,
     val pageSize: Int
 ) {
-    val realMemory = Memory(realMemorySize, pageSize, MemoryPolicies.FIFO)
-    val swapMemory = Memory(swapMemorySize, pageSize, MemoryPolicies.FIFO)
+    val realMemory = Memory(realMemorySize, pageSize, MemoryPolicies.LIFO)
+    val swapMemory = Memory(swapMemorySize, pageSize, MemoryPolicies.LIFO)
 
     fun spawnProcess(size: Int, pid: Int) {
         val pagesAvailable = realMemory.getAvailablePages()
@@ -51,11 +51,6 @@ class CPU(
             val swappedPage = swapMemory.pages.first { it.pid == pid && it.processPageIndex == pageNumber }
 
             swapPage.let {
-                if (modify) {
-                    swapMemory.addToModifyQueue(
-                        pid = realMemory.pages[it].pid,
-                        processPageIndex = realMemory.pages[it].processPageIndex)
-                }
                 swapMemory.allocatePage(
                     pid = realMemory.pages[it].pid,
                     processPageIndex = realMemory.pages[it].processPageIndex)
