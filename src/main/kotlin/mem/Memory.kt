@@ -1,43 +1,31 @@
 package mem
 
+import jdk.internal.org.objectweb.asm.tree.InnerClassNode
+
 
 interface MemoryPolicy {
-    fun getSwappingCandidates(
-        requiredPages: Int,
-        pages: List<Page>,
-        modifyQueue: List<Int>,
-        accessQueue: List<Int>,
-        insertionQueue: List<Int>
-    ): List<Int>
+    fun getSwappingCandidates(i: Int): List<Int>
 }
-
-class FIFOPolicy: MemoryPolicy {
-    override fun getSwappingCandidates(
-        requiredPages: Int,
-        pages: List<Page>,
-        modifyQueue: List<Int>,
-        accessQueue: List<Int>,
-        insertionQueue: List<Int>
-    ): List<Int> {
-        return listOf(5, 78) //TODO(AQUI ESTO ES PARA QUE COINICDA CON EL EJEMPLO, CUANDO IMLEMENTEN VIEN EL SWAP COREGIR)
-    }
-}
-
 
 class Memory(
     val size: Int,
     val pageSize: Int,
-    val policy: MemoryPolicy
+    val policy: MemoryPolicies
 ) {
+    val actualPolicy: MemoryPolicy = when(policy) {
+        MemoryPolicies.FIFO -> FIFOPolicy()
+        MemoryPolicies.LRU -> LRUPolicy()
+        MemoryPolicies.MFU -> MFUPolicy()
+    }
     private val modifyQueue = mutableListOf<Int>()
     private val accessQueue = mutableListOf<Int>()
     private val insertionQueue = mutableListOf<Int>()
 
     val pages: MutableList<Page> = (1..size/pageSize).map { Page(
-            pageIndex = it,
-            pid = null,
-            processPageIndex = null
-        ) }.toMutableList()
+        pageIndex = it,
+        pid = null,
+        processPageIndex = null
+    ) }.toMutableList()
 
 
     private fun availablePages(): List<Page> =
@@ -45,7 +33,7 @@ class Memory(
 
 
     fun getProcessPageIndex(pid: Int, pageIndex: Int) =
-            pages.firstOrNull {  it.pid == pid && it.processPageIndex== pageIndex }
+        pages.firstOrNull {  it.pid == pid && it.processPageIndex== pageIndex }
 
     fun isRequiredSpaceAvailable(requiredSize: Int): Boolean =
         pages.count { it.pid == null } >= requiredSize / pageSize
@@ -61,10 +49,6 @@ class Memory(
     }
 
     fun allocatePage(pid: Int?, processPageIndex: Int?) {
-//        if (!isRequiredSpaceAvailable(size)) {
-//            throw Throwable("Not enough space left in memory")
-//        }
-
         pages.indexOfFirst { it.pid == null }
             .let {
                 insertionQueue.add(it)
@@ -76,12 +60,55 @@ class Memory(
             }
     }
 
-    fun getSwappingCandidates(requiredPages: Int): List<Int> =
-        policy.getSwappingCandidates(requiredPages, pages, modifyQueue, accessQueue, insertionQueue)
+    fun addToModifyQueue(pid: Int?, processPageIndex: Int?) {
+        pages.indexOfFirst { it.pid == null }
+            .let {
+                modifyQueue.add(it)
+                pages[it] = Page(
+                    pageIndex =  it,
+                    pid = pid,
+                    processPageIndex = processPageIndex
+                )
+            }
+    }
+
+    fun getMostRepeated():Int? {
+        val numbersByElement = insertionQueue.groupingBy { it }.eachCount()
+        return numbersByElement.maxBy { it.value }?.key
+    }
+
+    fun getSwappingCandidates(requiredPages: Int): List<Int> = actualPolicy.getSwappingCandidates(requiredPages)
+
+    fun getSwappingCandidate(): Int = actualPolicy.getSwappingCandidates(1).first()
 
 
     fun getAvailablePages() = pages.count { it.pid == null }
 
 
     fun getCurrentAllocationSnapshot(): Triple<Int, Int, Int> = Triple(0,0,0)
+
+
+    inner class FIFOPolicy: MemoryPolicy {
+        override fun getSwappingCandidates(i: Int): List<Int> {
+            return insertionQueue.subList(fromIndex = 0, toIndex = i)
+        }
+    }
+
+    inner class LRUPolicy: MemoryPolicy {
+        override fun getSwappingCandidates(i: Int): List<Int> {
+            var result = modifyQueue.subList(fromIndex = modifyQueue.lastIndex - i, toIndex = modifyQueue.lastIndex)
+            return result
+        }
+    }
+
+
+    inner class MFUPolicy: MemoryPolicy {
+        override fun getSwappingCandidates(i: Int): List<Int> {
+            var listResult =  mutableListOf<Int>()
+            for(x in 0..i) {
+                listResult.add(getMostRepeated()!!)
+            }
+            return listResult
+        }
+    }
 }
