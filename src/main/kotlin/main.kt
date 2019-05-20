@@ -9,12 +9,18 @@ import java.net.InetSocketAddress
 import kotlinx.coroutines.*
 import kotlinx.coroutines.io.readUTF8Line
 import kotlinx.coroutines.io.writeStringUtf8
+import mem.Memory
+import mem.MemoryPolicies
 
 //Test que viene en el doc
 fun main() {
+
+    val realMemory = Memory(2*Sizes.KB, 16, MemoryPolicies.FIFO)
+    val swapMemory = Memory(4*Sizes.KB, 16, MemoryPolicies.FIFO)
+
     val cpu = CPU(
-        realMemorySize = 2 * Sizes.KB,
-        swapMemorySize = 4 * Sizes.KB,
+        realMemory = realMemory,
+        swapMemory = swapMemory,
         pageSize = 16
     )
 
