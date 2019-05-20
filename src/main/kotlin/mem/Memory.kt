@@ -1,6 +1,6 @@
 package mem
 
-import jdk.internal.org.objectweb.asm.tree.InnerClassNode
+//import jdk.internal.org.objectweb.asm.tree.InnerClassNode
 
 
 interface MemoryPolicy {
@@ -8,9 +8,9 @@ interface MemoryPolicy {
 }
 
 class Memory(
-    val size: Int,
-    val pageSize: Int,
-    val policy: MemoryPolicies
+        val size: Int,
+        val pageSize: Int,
+        val policy: MemoryPolicies
 ) {
     val actualPolicy: MemoryPolicy = when(policy) {
         MemoryPolicies.FIFO -> FIFOPolicy()
@@ -23,21 +23,21 @@ class Memory(
     private val insertionQueue = mutableListOf<Int>()
 
     val pages: MutableList<Page> = (1..size/pageSize).map { Page(
-        pageIndex = it,
-        pid = null,
-        processPageIndex = null
+            pageIndex = it,
+            pid = null,
+            processPageIndex = null
     ) }.toMutableList()
 
 
     private fun availablePages(): List<Page> =
-        pages.filter { it.pid == null }
+            pages.filter { it.pid == null }
 
 
     fun getProcessPageIndex(pid: Int, pageIndex: Int) =
-        pages.firstOrNull {  it.pid == pid && it.processPageIndex== pageIndex }
+            pages.firstOrNull {  it.pid == pid && it.processPageIndex== pageIndex }
 
     fun isRequiredSpaceAvailable(requiredSize: Int): Boolean =
-        pages.count { it.pid == null } >= requiredSize / pageSize
+            pages.count { it.pid == null } >= requiredSize / pageSize
 
 
     fun clearProcess(pid: Int) {
@@ -51,14 +51,14 @@ class Memory(
 
     fun allocatePage(pid: Int?, processPageIndex: Int?) {
         pages.indexOfFirst { it.pid == null }
-            .let {
-                insertionQueue.add(it)
-                pages[it] = Page(
-                    pageIndex =  it,
-                    pid = pid,
-                    processPageIndex = processPageIndex
-                )
-            }
+                .let {
+                    insertionQueue.add(it)
+                    pages[it] = Page(
+                            pageIndex =  it,
+                            pid = pid,
+                            processPageIndex = processPageIndex
+                    )
+                }
     }
 
     fun getSwappingCandidates(requiredPages: Int): List<Int> = actualPolicy.getSwappingCandidates(requiredPages)
